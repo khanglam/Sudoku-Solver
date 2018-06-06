@@ -277,11 +277,14 @@ unsigned int tesseractThisBitch(Mat& image,tesseract::TessBaseAPI api)
         float angle2 = determine_LINE[i][1];
         double cosine = cos(angle2), sine = sin(angle2);
         double a0 = cosine*angle1, b0 = sine*angle1;
+        edges[i].id = i;
         edges[i].pt1.x = cvRound(a0 + 4000*(-sine));
         edges[i].pt1.y = cvRound(b0 + 4000*(cosine));
+//        edges[i].pt1.y = cvRound(b0 + 1500*(cosine));
         edges[i].pt2.x = cvRound(a0 - 4000*(-sine));
         edges[i].pt2.y = cvRound(b0 - 4000*(cosine));
-        edges[i].id = i;
+//        edges[i].pt2.y = cvRound(b0 - 1500*(cosine));
+        
     }
     vector<pair<double,StraightEdge>> HORIZONTAL;
     vector<pair<double,StraightEdge>> TEMP;
@@ -290,7 +293,8 @@ unsigned int tesseractThisBitch(Mat& image,tesseract::TessBaseAPI api)
     for( size_t i = 0; i < edges.size(); ++i )
         if(determine_LINE[i][1]<CV_PI/20 or determine_LINE[i][1]>CV_PI-CV_PI/20) // Vertical if close to 180 deg or to 0 deg
             VERTICAL.push_back(make_pair(determine_LINE[i][0],edges[i]));
-        else if(abs(determine_LINE[i][1]-CV_PI/2)<CV_PI/20)                  // Horizontal if close to 90 deg
+        else if(abs(determine_LINE[i][1]-CV_PI/2)<CV_PI/20)
+            // Horizontal if close to 90 deg
             HORIZONTAL.push_back(make_pair(determine_LINE[i][0],edges[i]));
         else
             TEMP.push_back(make_pair(determine_LINE[i][0],edges[i]));
@@ -322,6 +326,9 @@ unsigned int tesseractThisBitch(Mat& image,tesseract::TessBaseAPI api)
             {
                 if(inters.x>=0 and inters.x<COL and inters.y>=0 and inters.y<ROW)
                 {
+                    /*        for(std::size_t i=0; i<10; ++i)
+                     for(std::size_t j=0; j<10; ++j)
+                     plug_points(cvMat, rightAngles[i][j]);*/
                     cosine.second.intersect.insert(make_pair(inters.y,sine.second.hori_and_veritical));
                     sine.second.intersect.insert(make_pair(inters.x,cosine.second.hori_and_veritical));
                 }
@@ -364,6 +371,23 @@ unsigned int tesseractThisBitch(Mat& image,tesseract::TessBaseAPI api)
                 float height = (downright.y - upperleft.y)*enlargeBy;
                 float average_width = (downright.x + upperleft.x)/2;
                 float average_height = (downright.y + upperleft.y)/2;
+                
+                
+                
+                /*for( size_t i = 0; i < determine_LINE.size(); i++ )    {
+                 float average_width = determine_LINE[i][0];
+                 float average_height = determine_LINE[i][1];
+                 double thickness =
+                 double a0 = cosine*angle1, b0 = sine*angle1;
+                 for(std::size_t i=0; i<9; ++i)
+                 {
+                 cout<<endl;
+                 for(std::size_t j=0; j<9; ++j)
+                 {
+                 cout<<BOX[i][j]<< " ";
+                 }
+                 }*/
+
                 upperleft.x = average_width-thickness/2;
                 upperleft.y = average_height-height/2;
                 downright.x = average_width+thickness/2;
@@ -466,9 +490,9 @@ unsigned int tesseractThisBitch(Mat& image,tesseract::TessBaseAPI api)
         mySudoku[8][8] = 4;
         ////////////////SOLVE THE SUDOKU///////
 
-        Solver<3> su;
+        Solver<3> su; //3x3
         
-        /* Set the recognized digits */
+    
         for(std::size_t i=0; i<3*3; ++i)
             for(std::size_t j=0; j<3*3; ++j)
                 su.set_value(i, j, tess[i][j]);
